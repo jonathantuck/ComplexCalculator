@@ -1,0 +1,170 @@
+//
+// ECE3090 Program 1 - Complex Number Class implementation
+// Jonathan Tuck
+//
+
+#include <iostream>
+#include <string>
+#include <math.h>
+#include "complex.h"
+#include "string-parse.h"
+#define PI (3.141592653589793)
+using namespace std;
+
+// Implement your constructors here
+// Constructors
+Complex::Complex()
+{
+} //Default Constructor
+Complex::Complex(double a, double b)
+{
+  realPart = a;
+  imgPart = b;
+}// Constructor if of form (a, b)
+Complex::Complex(const std::string& c)
+{
+  StringArray_t operands;
+  CharArray_t delims;
+  double mag;
+  double angle;
+  int count;
+
+  if (c[0] == '(' ) // in complex form
+    {
+      count = StringParse(RemoveParens(c),"<,",operands,delims);
+    }
+  else
+    {
+      count = 1;
+      operands[0] = c; //allows forms (a,b) to be added to numbers with only real part (ex. (1,2)+10 == (11,2) )
+    }
+
+  if (count == 0) //Initialize to zero
+  { 
+  realPart = 0;
+  imgPart = 0;
+  }/*
+  else if (count == 1) // only real part
+    {
+      realPart = ToDouble(operands[0]);
+      imgPart = 0;
+    }*/
+  else if (count == 2) // this could be in 1 of 2 forms
+    {
+      
+      if (delims[0] == ',') //Rect
+	{
+	  StringArray_t A = operands[0];
+	  StringArray_t B = operands[1];
+          realPart = ToDouble(A[0]);
+          imgPart = ToDouble(B[0]);
+	} 
+      else if (delims[0] == '>') //Polar
+	{
+	  //getting magnitude and angle of polar phasor
+	  StringArray_t C = operands[0];
+	  StringArray_t D = operands[1];
+	  mag = ToDouble(C[0]);
+	  angle = ToDouble(D[0]);
+	  angle = angle * PI / (double)180; //Converts degrees to radians, which is what math.h uses.
+	 
+	  //getting the real and img part of phasor using basic trig
+	  realPart = (mag*cos(angle));
+	  imgPart = (mag*sin(angle));
+	}
+    }
+  else if (count == 1) // only real part                                              
+    {
+      realPart = ToDouble(operands[0]);
+      imgPart = 0;
+    }
+ 
+} // Constructor if of form (a < B) or (a,b)
+
+// Implement your other member functions here
+// Member functions
+
+void Complex::set_realPart(double x)
+{
+  realPart = x;
+}
+
+void Complex::set_imgPart(double y)
+{
+  imgPart = y;
+}
+
+void Complex::Print()
+{
+  if (isnan(get_realPart()) || isnan(get_imgPart()))
+    {
+      //Output NaN if answer is NaN
+      cout << "= NaN" << endl;
+    }
+  else if (get_imgPart() == 0) //Only real component, only print the real component(no parentheses)
+    {
+      cout << "= " << get_realPart() << endl;
+    }
+  else //Put in parenthetical form
+    {
+  cout << "= (" << get_realPart() << ',' << get_imgPart() << ')' << endl; 
+    }
+}
+double Complex::get_realPart()
+{
+  return(realPart);
+}
+
+
+double Complex::get_imgPart()
+{
+  return (imgPart);
+}
+// Implement your operators here
+// Operators
+
+Complex Complex::operator+(Complex c)
+
+{
+  Complex result;
+  result.realPart = (this->realPart + c.realPart);
+  result.imgPart = (this->imgPart + c.imgPart);
+  return result;
+}
+
+
+
+Complex Complex::operator-(Complex d)
+{
+   Complex result;
+   result.realPart = (this->realPart - d.realPart);
+   result.imgPart = (this->imgPart - d.imgPart);
+   return result;
+}
+
+
+Complex operator*(Complex c5, Complex c6)
+{
+  double A = c5.realPart;
+  double B = c5.imgPart;
+  double C = c6.realPart;
+  double D = c6.imgPart;
+  return Complex(A*C-B*D,A*D + B*C);
+}
+
+Complex operator/(Complex c7, Complex c8)
+{
+  double aReal = c7.realPart;
+  double aImg = c7.imgPart;
+  double bReal = c8.realPart;
+  double bImg = c8.imgPart;
+  Complex c = c7 * Complex(bReal, (-1) * bImg);
+  double m = (bReal * bReal) + (bImg * bImg);
+  if (bReal == 0 && bImg == 0)
+    {
+    }
+  else
+    {
+      return Complex(c.realPart/m, c.imgPart/m);
+    }
+}
